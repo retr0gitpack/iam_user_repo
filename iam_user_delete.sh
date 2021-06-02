@@ -1,6 +1,6 @@
 #!/bin/bash
 
-user=$1
+user=test2
 echo "User: $user"
 
 user_policies=$(aws iam list-user-policies --user-name $user --query 'PolicyNames[*]' --output text)
