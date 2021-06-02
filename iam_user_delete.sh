@@ -2,8 +2,30 @@
 
 # This script will remove the IAM user from a particular AWS account
 
+SCRIPT_NAME=$(basename $0)
+usage () {
+echo '
+Usage: '"$SCRIPT_NAME"' "USERNAME" "AWS PROFILE NAME"
+
+E.g.
+'"$SCRIPT_NAME"' cb-varun some-random-aws-profile
+
+Note: 
+	- The username should not contain any special characters (except hyphen, -; tested)
+	- The script follows the rule of AWS on deleting IAM User.
+	- Test and use at your own risk, although I have tested this at my end without any issues.
+'
+}
+
+if [ "$#" -ne 2 ]; then
+	usage
+else
+	# Set the alias
+	alias aws=''`which aws`' --profile '"$2"' --output text'
+	shopt -s expand_aliases
+
 	# User name is the argument to the script
-	USER_NAME=test2
+	USER_NAME="test2"
 
 	# remove Access keys
 	ACC_KEY=$(aws iam list-access-keys --user-name "$USER_NAME" --output text --query 'AccessKeyMetadata[*].AccessKeyId')
@@ -50,3 +72,7 @@
 
 	# delete the user
 	aws iam delete-user --user-name "$USER_NAME"
+
+	# unset the alias
+	unalias aws
+fi
