@@ -25,7 +25,7 @@ else
 	shopt -s expand_aliases
 
 	# User name is the argument to the script
-	USER_NAME=test2
+	USER_NAME="$1"
 
 	# remove Access keys
 	ACC_KEY=$(aws iam list-access-keys --user-name "$USER_NAME" --output text --query 'AccessKeyMetadata[*].AccessKeyId')
