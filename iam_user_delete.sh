@@ -1,78 +1,48 @@
 #!/bin/bash
 
-# This script will remove the IAM user from a particular AWS account
+user=$1
+echo "User: $user"
 
-SCRIPT_NAME=$(basename $0)
-usage () {
-echo '
-Usage: '"$SCRIPT_NAME"' "USERNAME" "AWS PROFILE NAME"
+user_policies=$(aws iam list-user-policies --user-name $user --query 'PolicyNames[*]' --output text)
 
-E.g.
-'"$SCRIPT_NAME"' cb-varun some-random-aws-profile
+echo "Deleting user policies: $user_policies"
+for policy in $user_policies ;
+do
+  echo "aws iam delete-user-policy --user-name $user --policy-name $policy"
+  aws iam delete-user-policy --user-name $user --policy-name $policy
+done
 
-Note: 
-	- The username should not contain any special characters (except hyphen, -; tested)
-	- The script follows the rule of AWS on deleting IAM User.
-	- Test and use at your own risk, although I have tested this at my end without any issues.
-'
-}
+user_attached_policies=$(aws iam list-attached-user-policies --user-name $user --query 'AttachedPolicies[*].PolicyArn' --output text)
 
-if [ "$#" -ne 2 ]; then
-	usage
-else
-	# Set the alias
-	alias aws=''`which aws`' --profile '"$2"' --output text'
-	shopt -s expand_aliases
+echo "Detaching user attached policies: $user_attached_policies"
+for policy_arn in $user_attached_policies ;
+do
+  echo "aws iam detach-user-policy --user-name $user --policy-arn $policy_arn"
+  aws iam detach-user-policy --user-name $user --policy-arn $policy_arn
+done
 
-	# User name is the argument to the script
-	USER_NAME="$1"
+user_groups=$(aws iam list-groups-for-user --user-name $user --query 'Groups[*].GroupName' --output text)
 
-	# remove Access keys
-	ACC_KEY=$(aws iam list-access-keys --user-name "$USER_NAME" --output text --query 'AccessKeyMetadata[*].AccessKeyId')
-	if [ ! -z "$ACC_KEY" ]; then
-		echo "$ACC_KEY" | while read -r KEY_LIST; do
-			aws iam delete-access-key --user-name "$USER_NAME" --access-key-id "$KEY_LIST"
-		done
-	fi
+echo "Detaching user attached group: $user_groups"
+for group in $user_groups ;
+do
+  echo "aws iam remove-user-from-group --user-name $user --group-name $group"
+  aws iam remove-user-from-group --user-name $user --group-name $group
+done
 
-	# remove certificates
-	CERT_ID=$(aws iam list-signing-certificates --user-name "$USER_NAME" --output text --query 'Certificates[*].CertificateId')
-	if [ ! -z "$CERT_ID" ]; then
-		echo "$CERT_ID" | while read -r CERT_LIST; do
-			aws iam delete-signing-certificate --user-name "$USER_NAME" --certificate-id "$CERT_LIST"
-		done
-	fi
+user_access_keys=$(aws iam list-access-keys --user-name $user --query 'AccessKeyMetadata[*].AccessKeyId' --output text)
 
-	# remove login profile/password
-	aws iam delete-login-profile --user-name "$USER_NAME"
+echo "Deleting user access keys: $user_accces_keys"
+for key in $user_access_keys ;
+do
+  echo "aws iam delete-access-key --user-name $user --access-key-id $key"
+  aws iam delete-access-key --user-name $user --access-key-id $key
+done
 
-	# remove MFA devices
-	MFA_ID=$(aws iam list-mfa-devices --user-name "$USER_NAME" --query 'MFADevices[*].SerialNumber')
-	if [ ! -z "$MFA_ID" ]; then
-		echo "$MFA_ID" | while read -r MFA_LIST; do
-			aws iam deactivate-mfa-device --user-name "$USER_NAME" --serial-number "$MFA_LIST"
-		done
-	fi
+echo "Deleting user login profile"
+echo "aws iam delete-login-profile --user-name $user"
+aws iam delete-login-profile --user-name $user
 
-	# detach user policies
-	USER_POLICY=$(aws iam list-attached-user-policies --user-name "$USER_NAME" --query 'AttachedPolicies[*].PolicyArn')
-	if [ ! -z "$USER_POLICY" ]; then
-		echo "$USER_POLICY" | while read -r POLICIES; do
-			aws iam detach-user-policy --user-name "$USER_NAME" --policy-arn "$POLICIES"
-		done
-	fi
-
-	# remove user from groups
-	GRP_NAME=$(aws iam list-groups-for-user --user-name "$USER_NAME" --query 'Groups[*].GroupName' | tr -s '\t' '\n')
-	if [ ! -z "$GRP_NAME" ]; then
-		echo "$GRP_NAME" | while read -r GRP; do
-			aws iam remove-user-from-group --user-name "$USER_NAME" --group-name "$GRP"
-		done
-	fi
-
-	# delete the user
-	aws iam delete-user --user-name "$USER_NAME"
-
-	# unset the alias
-	unalias aws
-fi
+echo "Deleting user: $user"
+echo "aws iam delete-user --user-name $user"
+aws iam delete-user --user-name $user
