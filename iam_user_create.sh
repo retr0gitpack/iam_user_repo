@@ -8,9 +8,11 @@ policy=arn:aws:iam::aws:policy/AmazonS3FullAccess
 
 group=Restricted_Group
 
+tag=omron
+
 echo "User: $user"
 
-aws iam create-user --user-name $user --permissions-boundary arn:aws:iam::aws:policy/AlexaForBusinessFullAccess --tags omron
+aws iam create-user --user-name $user --permissions-boundary arn:aws:iam::aws:policy/AlexaForBusinessFullAccess --tags $tag
 
 aws iam attach-user-policy --user-name $user --policy-arn $policy
 
