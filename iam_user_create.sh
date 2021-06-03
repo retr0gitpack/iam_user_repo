@@ -4,9 +4,9 @@ user=test2
 
 pass=Omrontest!@
 
-policy=arn:aws:iam::aws:policy/AmazonS3FullAccess
+policy=AmazonS3FullAccess
 
-group=arn:aws:iam::728483987316:group/Restricted_Group
+group=Restricted_Group
 
 echo "User: $user"
 
