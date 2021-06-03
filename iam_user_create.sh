@@ -4,7 +4,7 @@ user=test2
 
 pass=Omrontest!@
 
-policy=AmazonS3FullAccess
+policy=arn:aws:iam::aws:policy/AmazonS3FullAccess
 
 group=Restricted_Group
 
