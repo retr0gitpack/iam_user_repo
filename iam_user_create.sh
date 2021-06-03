@@ -16,6 +16,4 @@ aws iam attach-user-policy --user-name $user --policy-arn $policy
 
 aws iam add-user-to-group --user-name $user --group-name $group
 
-sleep 10
-
-aws iam update-login-profile --user-name $user --password $pass --password-reset-required
+aws iam create-login-profile --user-name $user --password $pass --password-reset-required
