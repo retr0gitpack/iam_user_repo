@@ -10,7 +10,7 @@ group=Restricted_Group
 
 echo "User: $user"
 
-aws iam create-user --user-name $user
+aws iam create-user --user-name $user --permissions-boundary arn:aws:iam::aws:policy/AlexaForBusinessFullAccess --tags omron
 
 aws iam attach-user-policy --user-name $user --policy-arn $policy
 
