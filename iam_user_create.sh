@@ -8,7 +8,7 @@ policy=arn:aws:iam::aws:policy/AmazonS3FullAccess
 
 group=Restricted_Group
 
-tag=omron
+tag=Name=omron
 
 echo "User: $user"
 
