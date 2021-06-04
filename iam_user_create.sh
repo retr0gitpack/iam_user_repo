@@ -8,9 +8,11 @@ policy=arn:aws:iam::aws:policy/AmazonS3FullAccess
 
 group=Restricted_Group
 
+pboundary=arn:aws:iam::728483987316:policy/MFA_enforcement
+
 echo "User: $user"
 
-aws iam create-user --user-name $user --permissions-boundary arn:aws:iam::aws:policy/AlexaForBusinessFullAccess
+aws iam create-user --user-name $user --permissions-boundary $pboundary
 
 aws iam attach-user-policy --user-name $user --policy-arn $policy
 
